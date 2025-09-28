@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parminder's Birthday Card Creator</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        /* --- General Styling --- */
+        body {
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #f4f4f9;
+            padding: 10px; /* Reduced padding for small screens */
+            overflow-x: hidden; /* Prevents horizontal scroll from animations */
+        }
+
+        /* --- Controls Section Styling --- */
+        #controls {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            width: 95%; /* Take more width on small screens */
+            max-width: 400px;
+            text-align: left;
+            z-index: 10; /* Ensure controls are above card elements */
+            position: relative;
+        }
+
+        #controls label, #controls button {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        #controls input[type="text"], #controls select {
+            width: 100%; /* Full width inputs */
+            padding: 10px;
+            margin-bottom: 20px;
+            box-sizing: border-box; /* Include padding in width */
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        #downloadPdf {
+            background-color: #f99097;
+            color: white;
+            padding: 12px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+            width: 100%;
+        }
+
+        #downloadPdf:hover {
+            background-color: #d85058;
+        }
+
+        /* --- Card Styling --- */
+        #card {
+            position: relative;
+            width: 95%;
+            max-width: 600px;
+            min-height: 350px;
+            background-color: #ffeadb;
+            border: 10px solid #f99097;
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            box-sizing: border-box;
+            overflow: hidden;
+        }
+
+        .main-heading {
+            color: #d85058;
+            font-size: 2em; /* Smaller font for small screens */
+            margin-top: 0;
+            margin-bottom: 5px;
+            font-weight: 900;
+            position: relative;
+            z-index: 2;
+        }
+
+        #card h2 {
+            color: #7f3235;
+            font-size: 1.3em;
+            margin-bottom: 15px;
+            font-style: italic;
+            position: relative;
+            z-index: 2;
+        }
+
+        #card p {
+            color: #444;
+            font-size: 1em;
+            line-height: 1.5;
+            margin-bottom: 10px;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .guest-name {
+            color: #00008b;
+            font-weight: bold;
+            font-size: 1.2em;
+            text-decoration: underline;
+            position: relative;
+            z-index: 2;
+        }
+
+        .details-box {
+            background-color: #fff;
+            border: 2px dashed #f99097;
+            padding: 10px;
+            margin: 15px auto;
+            border-radius: 8px;
+            font-size: 1em;
+            width: 90%;
+            position: relative;
+            z-index: 2;
+        }
+        .details-box strong, .details-box span {
+            display: block;
+            margin-top: 3px;
+        }
+
+
+        .menu-option {
+            margin-top: 20px;
+            font-weight: bold;
+            font-size: 1.1em;
+            padding: 8px;
+            border-radius: 5px;
+            display: inline-block;
+            position: relative;
+            z-index: 2;
+        }
+
+        .veg {
+            background-color: #e6ffe6;
+            color: #008000;
+            border: 2px solid #008000;
+        }
+
+        .non-veg {
+            background-color: #ffe6e6;
+            color: #b22222;
+            border: 2px solid #b22222;
+        }
+
+        /* --- Cake and Balloons Styling --- */
+        .cake-design {
+            position: absolute;
+            bottom: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 150px; /* Smaller cake for phones */
+            height: auto;
+            z-index: 1;
+            opacity: 0.9;
+        }
+        
+        /* Using placeholder images for demo. REPLACE THESE URLs! */
+        .balloon {
+            position: absolute;
+            width: 60px; /* Smaller balloons for phones */
+            height: auto;
+            opacity: 0.7;
+            animation: float 10s ease-in-out infinite;
+            z-index: 1;
+        }
+
+        /* Individual balloon positions and animation delays/directions */
+        .balloon.b1 { top: 5%; left: 2%; animation-delay: 0s; animation-duration: 12s; }
+        .balloon.b2 { top: 2%; right: 5%; animation-delay: 2s; animation-duration: 10s; transform: rotate(10deg); }
+        .balloon.b3 { display: none; } /* Hide one balloon on small screens for cleaner look */
+        .balloon.b4 { top: 25%; right: -5%; animation-delay: 1s; animation-duration: 11s; }
+
+        /* Keyframes for floating animation */
+        @keyframes float {
+            0% { transform: translateY(0px) rotate(0deg); }
+            25% { transform: translateY(-10px) rotate(5deg); }
+            50% { transform: translateY(0px) rotate(0deg); }
+            75% { transform: translateY(10px) rotate(-5deg); }
+            100% { transform: translateY(0px) rotate(0deg); }
+        }
+
+        /* --- Media Query for Larger Screens (Tablets and Desktops) --- */
+        @media (min-width: 600px) {
+            #card {
+                padding: 30px; 
+                min-height: 400px;
+            }
+            .main-heading {
+                font-size: 2.8em; 
+            }
+            #card h2 {
+                font-size: 1.5em;
+            }
+            .guest-name {
+                font-size: 1.3em;
+            }
+            .details-box {
+                padding: 15px;
+                width: 80%;
+                font-size: 1.1em;
+            }
+            .menu-option {
+                font-size: 1.2em;
+            }
+            .cake-design {
+                width: 180px; 
+            }
+            .balloon {
+                width: 80px; 
+            }
+            .balloon.b3 {
+                display: block; /* Show the hidden balloon */
+                bottom: 20%;
+                left: -5%;
+                animation-delay: 4s;
+                animation-duration: 14s;
+                transform: rotate(-15deg);
+            }
+            .balloon.b4 {
+                top: 30%;
+                right: -8%;
+            }
+        }
+
+
+        /* --- PDF/Print Styling --- */
+        @media print {
+            body, #controls {
+                display: none;
+            }
+            #card {
+                margin: 0;
+                box-shadow: none;
+                width: 100%;
+                max-width: none;
+                border: 5px solid #f99097 !important;
+                padding: 20px;
+                min-height: 100mm; 
+            }
+            .cake-design, .balloon {
+                opacity: 1;
+                animation: none;
+            }
+            .cake-design {
+                width: 150px;
+                bottom: 0px;
+                left: 10px;
+                transform: translateX(0%);
+            }
+            .balloon.b1 { top: 5%; left: 80%; width: 60px; }
+            .balloon.b2 { top: 15%; left: 70%; width: 50px; }
+            .balloon.b3, .balloon.b4 { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="controls">
+        <h2>Birthday Party Invitation</h2>
+
+        <label for="nameInput">Enter Guest's Name:</label>
+        <input type="text" id="nameInput" placeholder="e.g., Anjali Sharma">
+
+        <label for="menuSelect">Select Meal Preference:</label>
+        <select id="menuSelect">
+            <option value="veg">Vegetarian 🥦</option>
+            <option value="non-veg">Non-Vegetarian 🍗</option>
+        </select>
+
+        <button id="downloadPdf">Download Card as PDF</button>
+    </div>
+
+    <div id="card">
+        
+        <img src="https://i.imgur.com/2s4J4Q7.png" alt="Red Balloon" class="balloon b1"> 
+        <img src="https://i.imgur.com/lO3uE8R.png" alt="Blue Balloon" class="balloon b2"> 
+        <img src="https://i.imgur.com/3c8E7lP.png" alt="Yellow Balloon" class="balloon b3"> 
+        <img src="https://i.imgur.com/2s4J4Q7.png" alt="Green Balloon" class="balloon b4"> 
+
+        <p class="main-heading">Parminder Singh Birthday Party</p>
+        <h2>You're Invited! 🎉</h2>
+
+        <p>Dear <span id="guestName" class="guest-name">[Guest Name]</span>,</p>
+
+        <p>You are cordially invited to celebrate my birthday with dinner, music, and great company!</p>
+
+        <div class="details-box">
+            **Date:** <span>Sunday, 28 September 2025</span><br>
+            **Time:** <span>7:00 PM</span><br>
+            **Venue:** <strong>Habibi Cafe</strong>
+        </div>
+
+        <p>We can't wait to celebrate with you.</p>
+
+        <div id="menuPreference" class="menu-option">
+            Your Meal Preference: Vegetarian 🥦
+        </div>
+        
+        <p style="margin-top: 30px; font-style: italic; color: #777; position: relative; z-index: 2;">R.S.V.P. is appreciated by Sep 20th, 2025</p>
+
+        <img src="https://i.imgur.com/iC5C965.png" alt="Birthday Cake" class="cake-design">
+    </div>
+
+    <script>
+        // --- DOM Element Selection ---
+        const nameInput = document.getElementById('nameInput');
+        const menuSelect = document.getElementById('menuSelect');
+        const guestNameDisplay = document.getElementById('guestName');
+        const menuPreferenceDisplay = document.getElementById('menuPreference');
+        const downloadButton = document.getElementById('downloadPdf');
+        const cardElement = document.getElementById('card');
+
+        // --- Event Listeners ---
+        nameInput.addEventListener('input', updateCard);
+        menuSelect.addEventListener('change', updateCard);
+        downloadButton.addEventListener('click', downloadCardAsPDF);
+
+        // --- Core Functions ---
+        function updateCard() {
+            const name = nameInput.value.trim() || 'Valued Guest';
+            const mealOption = menuSelect.value;
+            
+            guestNameDisplay.textContent = name;
+
+            if (mealOption
