@@ -13,8 +13,8 @@
             flex-direction: column;
             align-items: center;
             background-color: #f4f4f9;
-            padding: 10px; /* Reduced padding for small screens */
-            overflow-x: hidden; /* Prevents horizontal scroll from animations */
+            padding: 10px;
+            overflow-x: hidden;
         }
 
         /* --- Controls Section Styling --- */
@@ -24,10 +24,10 @@
             border-radius: 10px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             margin-bottom: 20px;
-            width: 95%; /* Take more width on small screens */
+            width: 95%;
             max-width: 400px;
             text-align: left;
-            z-index: 10; /* Ensure controls are above card elements */
+            z-index: 10;
             position: relative;
         }
 
@@ -38,10 +38,10 @@
         }
 
         #controls input[type="text"], #controls select {
-            width: 100%; /* Full width inputs */
+            width: 100%;
             padding: 10px;
             margin-bottom: 20px;
-            box-sizing: border-box; /* Include padding in width */
+            box-sizing: border-box;
             border: 1px solid #ccc;
             border-radius: 5px;
         }
@@ -80,7 +80,7 @@
 
         .main-heading {
             color: #d85058;
-            font-size: 2em; /* Smaller font for small screens */
+            font-size: 2em;
             margin-top: 0;
             margin-bottom: 5px;
             font-weight: 900;
@@ -161,16 +161,15 @@
             bottom: -20px;
             left: 50%;
             transform: translateX(-50%);
-            width: 150px; /* Smaller cake for phones */
+            width: 150px;
             height: auto;
             z-index: 1;
             opacity: 0.9;
         }
         
-        /* Using placeholder images for demo. REPLACE THESE URLs! */
         .balloon {
             position: absolute;
-            width: 60px; /* Smaller balloons for phones */
+            width: 60px;
             height: auto;
             opacity: 0.7;
             animation: float 10s ease-in-out infinite;
@@ -180,7 +179,7 @@
         /* Individual balloon positions and animation delays/directions */
         .balloon.b1 { top: 5%; left: 2%; animation-delay: 0s; animation-duration: 12s; }
         .balloon.b2 { top: 2%; right: 5%; animation-delay: 2s; animation-duration: 10s; transform: rotate(10deg); }
-        .balloon.b3 { display: none; } /* Hide one balloon on small screens for cleaner look */
+        .balloon.b3 { display: none; } 
         .balloon.b4 { top: 25%; right: -5%; animation-delay: 1s; animation-duration: 11s; }
 
         /* Keyframes for floating animation */
@@ -222,7 +221,7 @@
                 width: 80px; 
             }
             .balloon.b3 {
-                display: block; /* Show the hidden balloon */
+                display: block; 
                 bottom: 20%;
                 left: -5%;
                 animation-delay: 4s;
@@ -269,7 +268,7 @@
 <body>
 
     <div id="controls">
-        <h2>Birthday Party Invitation</h2>
+        <h2>Card Customizer</h2>
 
         <label for="nameInput">Enter Guest's Name:</label>
         <input type="text" id="nameInput" placeholder="e.g., Anjali Sharma">
@@ -285,10 +284,10 @@
 
     <div id="card">
         
-        <img src="https://i.imgur.com/2s4J4Q7.png" alt="Red Balloon" class="balloon b1"> 
-        <img src="https://i.imgur.com/lO3uE8R.png" alt="Blue Balloon" class="balloon b2"> 
-        <img src="https://i.imgur.com/3c8E7lP.png" alt="Yellow Balloon" class="balloon b3"> 
-        <img src="https://i.imgur.com/2s4J4Q7.png" alt="Green Balloon" class="balloon b4"> 
+        <img src="/images/red_balloon.png" alt="Red Balloon" class="balloon b1"> 
+        <img src="/images/blue_balloon.png" alt="Blue Balloon" class="balloon b2"> 
+        <img src="/images/yellow_balloon.png" alt="Yellow Balloon" class="balloon b3"> 
+        <img src="/images/green_balloon.png" alt="Green Balloon" class="balloon b4"> 
 
         <p class="main-heading">Parminder Singh Birthday Party</p>
         <h2>You're Invited! 🎉</h2>
@@ -311,7 +310,7 @@
         
         <p style="margin-top: 30px; font-style: italic; color: #777; position: relative; z-index: 2;">R.S.V.P. is appreciated by Sep 20th, 2025</p>
 
-        <img src="https://i.imgur.com/iC5C965.png" alt="Birthday Cake" class="cake-design">
+        <img src="/images/cake.png" alt="Birthday Cake" class="cake-design">
     </div>
 
     <script>
@@ -335,4 +334,43 @@
             
             guestNameDisplay.textContent = name;
 
-            if (mealOption
+            if (mealOption === 'veg') {
+                menuPreferenceDisplay.textContent = 'Your Meal Preference: Vegetarian 🥦';
+                menuPreferenceDisplay.className = 'menu-option veg';
+            } else {
+                menuPreferenceDisplay.textContent = 'Your Meal Preference: Non-Vegetarian 🍗';
+                menuPreferenceDisplay.className = 'menu-option non-veg';
+            }
+        }
+
+        function downloadCardAsPDF() {
+            const guestName = nameInput.value.trim() || 'Guest';
+            const filename = `Birthday_Invite_${guestName.replace(/\s/g, '_')}.pdf`;
+
+            // Configuration for html2pdf
+            const pdfConfig = {
+                margin: 10,
+                filename: filename,
+                image: { type: 'jpeg', quality: 0.98 },
+                // Since we are now using local images, we can rely on default html2canvas
+                // settings, but we'll keep the scale and logging for quality.
+                html2canvas: { 
+                    scale: 2, 
+                    logging: true, 
+                    dpi: 192, 
+                    letterRendering: true, 
+                    useCORS: false // Set to false since images should be local
+                }, 
+                jsPDF: { unit: 'mm', format: 'a5', orientation: 'portrait' }
+            };
+
+            // Generate and download the PDF
+            html2pdf().set(pdfConfig).from(cardElement).save();
+        }
+
+        // Initial call to set the card's default state on load
+        updateCard();
+    </script>
+
+</body>
+</html>
